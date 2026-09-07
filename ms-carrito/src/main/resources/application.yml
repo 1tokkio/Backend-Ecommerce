@@ -12,12 +12,14 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         default_schema: carrito
     open-in-view: false
+    
 
 azure:
   issuer-uri: ${AZURE_ISSUER_URI}
