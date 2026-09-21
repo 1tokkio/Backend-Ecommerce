@@ -1,7 +1,6 @@
 package cl.duoc.pedidos360.carrito.controller;
 
 import cl.duoc.pedidos360.carrito.model.ItemCarrito;
-import cl.duoc.pedidos360.carrito.model.Producto;
 import cl.duoc.pedidos360.carrito.service.CarritoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,11 +34,6 @@ public class CarritoController {
         return Map.of("servicio", "ms-carrito", "estado", "operativo");
     }
 
-    @GetMapping("/productos")
-    public ResponseEntity<List<Producto>> catalogo() {
-        return ResponseEntity.ok(servicio.catalogo());
-    }
-
     @GetMapping
     public ResponseEntity<Map<String, Object>> verCarrito(@AuthenticationPrincipal Jwt token) {
         List<ItemCarrito> items = servicio.verCarrito(oidDe(token));
@@ -54,16 +48,15 @@ public class CarritoController {
     @PostMapping("/items")
     public ResponseEntity<?> agregar(@AuthenticationPrincipal Jwt token,
                                      @RequestBody AgregarItem peticion) {
-        if (peticion.productoId() == null || peticion.cantidad() == null || peticion.cantidad() < 1) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("mensaje", "Se requiere productoId y una cantidad mayor a cero"));
+        if (peticion.productoId() == null || peticion.nombreProducto() == null
+                || peticion.precioUnitario() == null || peticion.precioUnitario() < 0
+                || peticion.cantidad() == null || peticion.cantidad() < 1) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje",
+                    "Se requiere productoId, nombreProducto, precioUnitario y una cantidad mayor a cero"));
         }
-        try {
-            ItemCarrito item = servicio.agregar(oidDe(token), peticion.productoId(), peticion.cantidad());
-            return ResponseEntity.status(HttpStatus.CREATED).body(item);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
-        }
+        ItemCarrito item = servicio.agregar(oidDe(token), peticion.productoId(),
+                peticion.nombreProducto(), peticion.precioUnitario(), peticion.cantidad());
+        return ResponseEntity.status(HttpStatus.CREATED).body(item);
     }
 
     @DeleteMapping("/items/{itemId}")
@@ -86,6 +79,6 @@ public class CarritoController {
         return token.getClaimAsString("oid");
     }
 
-    public record AgregarItem(Long productoId, Integer cantidad) {
+    public record AgregarItem(Long productoId, String nombreProducto, Integer precioUnitario, Integer cantidad) {
     }
 }

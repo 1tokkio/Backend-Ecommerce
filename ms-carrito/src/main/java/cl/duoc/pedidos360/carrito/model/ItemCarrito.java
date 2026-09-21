@@ -34,11 +34,12 @@ public class ItemCarrito {
     public ItemCarrito() {
     }
 
-    public ItemCarrito(String usuarioOid, Producto producto, Integer cantidad) {
+    public ItemCarrito(String usuarioOid, Long productoId, String nombreProducto,
+                       Integer precioUnitario, Integer cantidad) {
         this.usuarioOid = usuarioOid;
-        this.productoId = producto.getId();
-        this.nombreProducto = producto.getNombre();
-        this.precioUnitario = producto.getPrecio();
+        this.productoId = productoId;
+        this.nombreProducto = nombreProducto;
+        this.precioUnitario = precioUnitario;
         this.cantidad = cantidad;
     }
 
