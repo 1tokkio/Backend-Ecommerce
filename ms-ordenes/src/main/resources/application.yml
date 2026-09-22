@@ -1,9 +1,9 @@
 server:
-  port: ${SERVER_PORT:8083}
+  port: ${SERVER_PORT:8084}
 
 spring:
   application:
-    name: ms-pedidos
+    name: ms-ordenes
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -17,8 +17,14 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        default_schema: pedidos
+        default_schema: ordenes
     open-in-view: false
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
 
 azure:
   issuer-uri: ${AZURE_ISSUER_URI}

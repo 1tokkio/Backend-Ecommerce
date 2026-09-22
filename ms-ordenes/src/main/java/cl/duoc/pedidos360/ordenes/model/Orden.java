@@ -1,4 +1,4 @@
-package cl.duoc.pedidos360.pedidos.model;
+package cl.duoc.pedidos360.ordenes.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "pedido")
-public class Pedido {
+@Table(name = "orden")
+public class Orden {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,13 +36,13 @@ public class Pedido {
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetallePedido> detalles = new ArrayList<>();
+    @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleOrden> detalles = new ArrayList<>();
 
-    public Pedido() {
+    public Orden() {
     }
 
-    public Pedido(String usuarioOid, String correoUsuario) {
+    public Orden(String usuarioOid, String correoUsuario) {
         this.usuarioOid = usuarioOid;
         this.correoUsuario = correoUsuario;
         this.estado = "CONFIRMADO";
@@ -50,8 +50,8 @@ public class Pedido {
         this.total = 0;
     }
 
-    public void agregarDetalle(DetallePedido detalle) {
-        detalle.setPedido(this);
+    public void agregarDetalle(DetalleOrden detalle) {
+        detalle.setOrden(this);
         this.detalles.add(detalle);
         this.total += detalle.getSubtotal();
     }
@@ -80,7 +80,7 @@ public class Pedido {
         return fechaCreacion;
     }
 
-    public List<DetallePedido> getDetalles() {
+    public List<DetalleOrden> getDetalles() {
         return detalles;
     }
 }

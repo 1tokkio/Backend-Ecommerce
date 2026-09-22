@@ -1,8 +1,8 @@
-package cl.duoc.pedidos360.pedidos.controller;
+package cl.duoc.pedidos360.ordenes.controller;
 
-import cl.duoc.pedidos360.pedidos.dto.NuevoPedido;
-import cl.duoc.pedidos360.pedidos.model.Pedido;
-import cl.duoc.pedidos360.pedidos.service.PedidoService;
+import cl.duoc.pedidos360.ordenes.dto.NuevaOrden;
+import cl.duoc.pedidos360.ordenes.model.Orden;
+import cl.duoc.pedidos360.ordenes.service.OrdenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,45 +18,45 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/pedidos")
-public class PedidoController {
+@RequestMapping("/api/v1/ordenes")
+public class OrdenController {
 
-    private final PedidoService servicio;
+    private final OrdenService servicio;
 
-    public PedidoController(PedidoService servicio) {
+    public OrdenController(OrdenService servicio) {
         this.servicio = servicio;
     }
 
     @GetMapping("/estado")
     public Map<String, String> estado() {
-        return Map.of("servicio", "ms-pedidos", "estado", "operativo");
+        return Map.of("servicio", "ms-ordenes", "estado", "operativo");
     }
 
-    /** El pedido siempre se registra a nombre del dueño del token, no del cuerpo de la peticion. */
+    /** La orden siempre se registra a nombre del dueño del token, no del cuerpo de la peticion. */
     @PostMapping
     public ResponseEntity<?> crear(@AuthenticationPrincipal Jwt token,
-                                   @RequestBody NuevoPedido peticion) {
+                                   @RequestBody NuevaOrden peticion) {
         if (peticion.items() == null || peticion.items().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", "El pedido no puede ir vacio"));
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "La orden no puede ir vacia"));
         }
 
-        Pedido pedido = servicio.crear(
+        Orden orden = servicio.crear(
                 token.getClaimAsString("oid"),
                 correoDe(token),
                 peticion.items());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orden);
     }
 
-    @GetMapping("/mis-pedidos")
-    public ResponseEntity<List<Pedido>> misPedidos(@AuthenticationPrincipal Jwt token) {
-        return ResponseEntity.ok(servicio.misPedidos(token.getClaimAsString("oid")));
+    @GetMapping("/mis-ordenes")
+    public ResponseEntity<List<Orden>> misOrdenes(@AuthenticationPrincipal Jwt token) {
+        return ResponseEntity.ok(servicio.misOrdenes(token.getClaimAsString("oid")));
     }
 
-    /** Pedidos de todos los clientes. Requiere el rol Admin, si no responde 403. */
+    /** Ordenes de todos los clientes. Requiere el rol Admin, si no responde 403. */
     @GetMapping
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<List<Pedido>> todos() {
+    public ResponseEntity<List<Orden>> todos() {
         return ResponseEntity.ok(servicio.todos());
     }
 

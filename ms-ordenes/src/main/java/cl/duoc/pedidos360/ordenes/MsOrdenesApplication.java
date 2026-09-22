@@ -1,12 +1,12 @@
-package cl.duoc.pedidos360.pedidos;
+package cl.duoc.pedidos360.ordenes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MsPedidosApplication {
+public class MsOrdenesApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MsPedidosApplication.class, args);
+        SpringApplication.run(MsOrdenesApplication.class, args);
     }
 }

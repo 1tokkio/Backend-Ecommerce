@@ -1,4 +1,4 @@
-package cl.duoc.pedidos360.pedidos.model;
+package cl.duoc.pedidos360.ordenes.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
@@ -11,17 +11,20 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "detalle_pedido")
-public class DetallePedido {
+@Table(name = "detalle_orden")
+public class DetalleOrden {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "orden_id", nullable = false)
     @JsonIgnore
-    private Pedido pedido;
+    private Orden orden;
+
+    @Column(nullable = false)
+    private Long productoId;
 
     @Column(nullable = false, length = 120)
     private String nombreProducto;
@@ -32,10 +35,11 @@ public class DetallePedido {
     @Column(nullable = false)
     private Integer cantidad;
 
-    public DetallePedido() {
+    public DetalleOrden() {
     }
 
-    public DetallePedido(String nombreProducto, Integer precioUnitario, Integer cantidad) {
+    public DetalleOrden(Long productoId, String nombreProducto, Integer precioUnitario, Integer cantidad) {
+        this.productoId = productoId;
         this.nombreProducto = nombreProducto;
         this.precioUnitario = precioUnitario;
         this.cantidad = cantidad;
@@ -45,8 +49,12 @@ public class DetallePedido {
         return id;
     }
 
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+    public void setOrden(Orden orden) {
+        this.orden = orden;
+    }
+
+    public Long getProductoId() {
+        return productoId;
     }
 
     public String getNombreProducto() {
