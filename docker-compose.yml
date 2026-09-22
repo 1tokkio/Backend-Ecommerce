@@ -17,9 +17,9 @@ services:
       - pedidos360-network
     restart: unless-stopped
 
-  ms-carrito:
-    build: ./ms-carrito
-    container_name: pedidos360-ms-carrito
+  ms-productos:
+    build: ./ms-productos
+    container_name: pedidos360-ms-productos
     ports:
       - "8082:8082"
     environment:
@@ -27,6 +27,9 @@ services:
       SPRING_DATASOURCE_URL: ${DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       AZURE_ISSUER_URI: ${AZURE_ISSUER_URI}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID}
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
@@ -35,9 +38,9 @@ services:
       - pedidos360-network
     restart: unless-stopped
 
-  ms-pedidos:
-    build: ./ms-pedidos
-    container_name: pedidos360-ms-pedidos
+  ms-carrito:
+    build: ./ms-carrito
+    container_name: pedidos360-ms-carrito
     ports:
       - "8083:8083"
     environment:
@@ -53,7 +56,71 @@ services:
       - pedidos360-network
     restart: unless-stopped
 
+  ms-ordenes:
+    build: ./ms-ordenes
+    container_name: pedidos360-ms-ordenes
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: ${DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AZURE_ISSUER_URI: ${AZURE_ISSUER_URI}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    networks:
+      - pedidos360-network
+    restart: unless-stopped
+
+  ms-notificaciones:
+    build: ./ms-notificaciones
+    container_name: pedidos360-ms-notificaciones
+    ports:
+      - "8085:8085"
+    environment:
+      SERVER_PORT: 8085
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      AZURE_ISSUER_URI: ${AZURE_ISSUER_URI}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    networks:
+      - pedidos360-network
+    restart: unless-stopped
+
+  ms-auditoria:
+    build: ./ms-auditoria
+    container_name: pedidos360-ms-auditoria
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: ${DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AZURE_ISSUER_URI: ${AZURE_ISSUER_URI}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    networks:
+      - pedidos360-network
+    restart: unless-stopped
+
 networks:
   pedidos360-network:
-    external: true
     name: pedidos360-network
+    driver: bridge

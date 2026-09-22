@@ -1,14 +1,17 @@
 # pedidos360-backend
 
-Los tres microservicios del sistema Pedidos360, construidos con Spring Boot 3.2.5
+Los seis microservicios del sistema Pedidos360, construidos con Spring Boot 3.2.5
 sobre Java 17. Cada uno es un Resource Server de OAuth2: recibe el access token que
 el frontend obtuvo desde Microsoft Entra ID y lo valida antes de responder.
 
-| Servicio      | Puerto | Schema     | Ruta base            |
-|---------------|--------|------------|----------------------|
-| ms-usuarios   | 8081   | `usuarios` | `/api/v1/usuarios`   |
-| ms-carrito    | 8082   | `carrito`  | `/api/v1/carrito`    |
-| ms-pedidos    | 8083   | `pedidos`  | `/api/v1/pedidos`    |
+| Servicio           | Puerto | Schema           | Ruta base                 |
+|---------------------|--------|------------------|----------------------------|
+| ms-usuarios         | 8081   | `usuarios`       | `/api/v1/usuarios`         |
+| ms-productos        | 8082   | `productos`      | `/api/v1/productos`        |
+| ms-carrito          | 8083   | `carrito`        | `/api/v1/carrito`          |
+| ms-ordenes          | 8084   | `ordenes`        | `/api/v1/ordenes`          |
+| ms-notificaciones   | 8085   | -                | `/api/v1/notificaciones`   |
+| ms-auditoria        | 8086   | `auditoria`      | `/api/v1/auditoria`        |
 
 ## Validacion del token
 
@@ -24,6 +27,13 @@ Spring con el prefijo `ROLE_`, lo que permite proteger endpoints con
 `@PreAuthorize("hasRole('Admin')")`. Un token valido pero sin ese rol recibe **403**,
 mientras que una peticion sin token recibe **401**.
 
+## Mensajeria
+
+Un exchange `topic` llamado `pedidos360`. `ms-ordenes` publica `pedido.creado` al
+crear una orden; `ms-productos`, `ms-notificaciones` y `ms-auditoria` lo consumen
+cada uno desde su propia cola. El detalle esta en el `CLAUDE.md` de la raiz del
+proyecto.
+
 ## Endpoints
 
 ### ms-usuarios
@@ -31,28 +41,49 @@ mientras que una peticion sin token recibe **401**.
 - `GET /api/v1/usuarios/perfil` - registra al usuario a partir de los claims y devuelve su perfil.
 - `GET /api/v1/usuarios` - listado completo, **solo rol Admin**.
 
+### ms-productos
+- `GET /api/v1/productos/estado` - abierto, sin token.
+- `GET /api/v1/productos` - catalogo con stock.
+- `GET /api/v1/productos/{id}` - detalle de un producto.
+- Consume `pedido.creado` y descuenta el stock de cada item.
+
 ### ms-carrito
 - `GET /api/v1/carrito/estado` - abierto, sin token.
-- `GET /api/v1/carrito/productos` - catalogo.
 - `GET /api/v1/carrito` - carrito del usuario del token, con total calculado.
-- `POST /api/v1/carrito/items` - cuerpo `{ "productoId": 1, "cantidad": 2 }`.
+- `POST /api/v1/carrito/items` - cuerpo `{ "productoId": 1, "nombreProducto": "...", "precioUnitario": 1000, "cantidad": 2 }`.
 - `DELETE /api/v1/carrito/items/{id}` - quita un item propio.
 - `DELETE /api/v1/carrito` - vacia el carrito.
 
-### ms-pedidos
-- `GET /api/v1/pedidos/estado` - abierto, sin token.
-- `POST /api/v1/pedidos` - cuerpo `{ "items": [{ "nombreProducto": "...", "precioUnitario": 1000, "cantidad": 1 }] }`.
-- `GET /api/v1/pedidos/mis-pedidos` - pedidos del usuario del token.
-- `GET /api/v1/pedidos` - todos los pedidos, **solo rol Admin**.
+### ms-ordenes
+- `GET /api/v1/ordenes/estado` - abierto, sin token.
+- `POST /api/v1/ordenes` - cuerpo `{ "items": [{ "productoId": 1, "nombreProducto": "...", "precioUnitario": 1000, "cantidad": 1 }] }`.
+  Publica `pedido.creado` una vez que la orden queda guardada.
+- `GET /api/v1/ordenes/mis-ordenes` - ordenes del usuario del token.
+- `GET /api/v1/ordenes` - todas las ordenes, **solo rol Admin**.
+
+### ms-notificaciones
+- `GET /api/v1/notificaciones/estado` - abierto, sin token.
+- `POST /api/v1/notificaciones/prueba` - envia un correo de prueba sin pasar por RabbitMQ.
+- Consume `pedido.creado` y envia el correo de confirmacion.
+
+### ms-auditoria
+- `GET /api/v1/auditoria/estado` - abierto, sin token.
+- `GET /api/v1/auditoria` - listado de eventos registrados, **solo rol Admin**.
+- Consume cualquier evento del exchange (`#`) y lo deja registrado.
 
 ## Como levantarlo
 
-Primero hay que tener corriendo el stack de `pedidos360-data`, que crea la red
-`pedidos360-network` y la base de datos.
+Primero hay que tener corriendo el stack de `Data-Ecommerce`, que crea la base y
+RabbitMQ.
 
     cp .env.example .env
     # completar los valores
     docker compose up -d --build
+
+En local, si ambos repositorios corren en la misma maquina, `DATASOURCE_URL` y
+`RABBITMQ_HOST` usan el nombre de los contenedores porque comparten la red
+`pedidos360-network`. En AWS, cada repositorio vive en su propia instancia y esos
+valores pasan a ser la IP privada de la instancia de datos.
 
 Para desarrollar un servicio suelto sin Docker, exportar las mismas variables y:
 
