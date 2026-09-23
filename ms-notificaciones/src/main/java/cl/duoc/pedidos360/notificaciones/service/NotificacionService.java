@@ -17,9 +17,14 @@ public class NotificacionService {
         this.repositorio = repositorio;
     }
 
-    /** Envia el correo y deja registrado el intento, haya salido o no. */
+    /** Envio de prueba, sin detalle de items porque no viene de una orden real. */
     public NotificacionEnviada enviar(String destinatario, Long ordenId, Integer total) {
-        boolean enviada = correo.enviarConfirmacion(destinatario, ordenId, total);
+        return enviar(destinatario, ordenId, total, List.of());
+    }
+
+    /** Envia el correo y deja registrado el intento, haya salido o no. */
+    public NotificacionEnviada enviar(String destinatario, Long ordenId, Integer total, List<String> detalleItems) {
+        boolean enviada = correo.enviarConfirmacion(destinatario, ordenId, total, detalleItems);
         return repositorio.save(new NotificacionEnviada(destinatario, ordenId, total, enviada));
     }
 
