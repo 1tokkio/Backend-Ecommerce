@@ -22,9 +22,10 @@ public class CorreoService {
 
     /**
      * Un correo que falla no puede tumbar el consumo del mensaje: la orden ya existe
-     * y el stock ya se descuenta por su cuenta. Si el envio falla solo queda en el log.
+     * y el stock ya se descuenta por su cuenta. Si el envio falla, se avisa con el
+     * valor de retorno para que quede registrado, pero no se relanza la excepcion.
      */
-    public void enviarConfirmacion(String destinatario, Long ordenId, Integer total) {
+    public boolean enviarConfirmacion(String destinatario, Long ordenId, Integer total) {
         SimpleMailMessage mensaje = new SimpleMailMessage();
         mensaje.setFrom(remitente);
         mensaje.setTo(destinatario);
@@ -34,8 +35,10 @@ public class CorreoService {
         try {
             mailSender.send(mensaje);
             log.info("Correo de confirmacion enviado a {} por la orden {}", destinatario, ordenId);
+            return true;
         } catch (Exception e) {
             log.error("No se pudo enviar el correo de la orden {}: {}", ordenId, e.getMessage());
+            return false;
         }
     }
 }
