@@ -8,10 +8,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
@@ -59,10 +59,10 @@ public class CarritoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(item);
     }
 
-    @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<?> quitar(@AuthenticationPrincipal Jwt token, @PathVariable Long itemId) {
+    @DeleteMapping("/items")
+    public ResponseEntity<?> quitar(@AuthenticationPrincipal Jwt token, @RequestParam Long id) {
         try {
-            servicio.quitar(oidDe(token), itemId);
+            servicio.quitar(oidDe(token), id);
             return ResponseEntity.noContent().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
