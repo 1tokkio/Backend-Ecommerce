@@ -10,7 +10,7 @@ el frontend obtuvo desde Microsoft Entra ID y lo valida antes de responder.
 | ms-productos        | 8082   | `productos`      | `/api/v1/productos`        |
 | ms-carrito          | 8083   | `carrito`        | `/api/v1/carrito`          |
 | ms-ordenes          | 8084   | `ordenes`        | `/api/v1/ordenes`          |
-| ms-notificaciones   | 8085   | -                | `/api/v1/notificaciones`   |
+| ms-notificaciones   | 8085   | `notificaciones` | `/api/v1/notificaciones`   |
 | ms-auditoria        | 8086   | `auditoria`      | `/api/v1/auditoria`        |
 
 ## Validacion del token
@@ -45,6 +45,7 @@ proyecto.
 - `GET /api/v1/productos/estado` - abierto, sin token.
 - `GET /api/v1/productos` - catalogo con stock.
 - `GET /api/v1/productos/{id}` - detalle de un producto.
+- `POST /api/v1/productos` - cuerpo `{ "nombre": "...", "descripcion": "...", "precio": 1000, "categoria": "...", "stock": 10 }`, **solo rol Admin**.
 - Consume `pedido.creado` y descuenta el stock de cada item.
 
 ### ms-carrito
@@ -63,8 +64,9 @@ proyecto.
 
 ### ms-notificaciones
 - `GET /api/v1/notificaciones/estado` - abierto, sin token.
-- `POST /api/v1/notificaciones/prueba` - envia un correo de prueba sin pasar por RabbitMQ.
-- Consume `pedido.creado` y envia el correo de confirmacion.
+- `POST /api/v1/notificaciones/enviar` - cuerpo `{ "destinatario": "..." }`, envia un correo de prueba sin pasar por RabbitMQ.
+- `GET /api/v1/notificaciones` - historial de notificaciones enviadas, **solo rol Admin**.
+- Consume `pedido.creado`, envia el correo de confirmacion y deja el intento registrado.
 
 ### ms-auditoria
 - `GET /api/v1/auditoria/estado` - abierto, sin token.

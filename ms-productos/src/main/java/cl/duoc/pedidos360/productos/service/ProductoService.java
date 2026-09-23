@@ -1,5 +1,6 @@
 package cl.duoc.pedidos360.productos.service;
 
+import cl.duoc.pedidos360.productos.dto.NuevoProducto;
 import cl.duoc.pedidos360.productos.mensajeria.PedidoCreado;
 import cl.duoc.pedidos360.productos.model.Producto;
 import cl.duoc.pedidos360.productos.repository.ProductoRepository;
@@ -24,6 +25,12 @@ public class ProductoService {
 
     public Optional<Producto> buscar(Long id) {
         return repositorio.findById(id);
+    }
+
+    public Producto crear(NuevoProducto datos) {
+        Producto producto = new Producto(
+                datos.nombre(), datos.descripcion(), datos.precio(), datos.categoria(), datos.stock());
+        return repositorio.save(producto);
     }
 
     /**
