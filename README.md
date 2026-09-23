@@ -31,8 +31,9 @@ mientras que una peticion sin token recibe **401**.
 
 Un exchange `topic` llamado `pedidos360`. `ms-ordenes` publica `pedido.creado` al
 crear una orden; `ms-productos`, `ms-notificaciones` y `ms-auditoria` lo consumen
-cada uno desde su propia cola. El detalle esta en el `CLAUDE.md` de la raiz del
-proyecto.
+cada uno desde su propia cola. Las colas, routing keys y el formato del mensaje
+estan detallados en la seccion "Endpoints" de este archivo y en el codigo de
+cada `RabbitConfig`.
 
 ## Endpoints
 
