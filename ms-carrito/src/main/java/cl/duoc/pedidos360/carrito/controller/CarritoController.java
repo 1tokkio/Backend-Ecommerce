@@ -36,7 +36,7 @@ public class CarritoController {
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> verCarrito(@AuthenticationPrincipal Jwt token) {
-        List<ItemCarrito> items = servicio.verCarrito(oidDe(token));
+        List<ItemCarrito> items = servicio.verCarrito(identificadorDe(token));
 
         Map<String, Object> respuesta = new LinkedHashMap<>();
         respuesta.put("items", items);
@@ -54,7 +54,7 @@ public class CarritoController {
             return ResponseEntity.badRequest().body(Map.of("mensaje",
                     "Se requiere productoId, nombreProducto, precioUnitario y una cantidad mayor a cero"));
         }
-        ItemCarrito item = servicio.agregar(oidDe(token), peticion.productoId(),
+        ItemCarrito item = servicio.agregar(identificadorDe(token), peticion.productoId(),
                 peticion.nombreProducto(), peticion.precioUnitario(), peticion.cantidad());
         return ResponseEntity.status(HttpStatus.CREATED).body(item);
     }
@@ -62,7 +62,7 @@ public class CarritoController {
     @DeleteMapping("/items")
     public ResponseEntity<?> quitar(@AuthenticationPrincipal Jwt token, @RequestParam Long id) {
         try {
-            servicio.quitar(oidDe(token), id);
+            servicio.quitar(identificadorDe(token), id);
             return ResponseEntity.noContent().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", e.getMessage()));
@@ -71,12 +71,14 @@ public class CarritoController {
 
     @DeleteMapping
     public ResponseEntity<Void> vaciar(@AuthenticationPrincipal Jwt token) {
-        servicio.vaciar(oidDe(token));
+        servicio.vaciar(identificadorDe(token));
         return ResponseEntity.noContent().build();
     }
 
-    private String oidDe(Jwt token) {
-        return token.getClaimAsString("oid");
+    /** El identificador estable es "oid" en Azure y "sub" en Cognito. */
+    private String identificadorDe(Jwt token) {
+        String issuer = token.getIssuer() == null ? "" : token.getIssuer().toString();
+        return issuer.contains("cognito-idp") ? token.getSubject() : token.getClaimAsString("oid");
     }
 
     public record AgregarItem(Long productoId, String nombreProducto, Integer precioUnitario, Integer cantidad) {
