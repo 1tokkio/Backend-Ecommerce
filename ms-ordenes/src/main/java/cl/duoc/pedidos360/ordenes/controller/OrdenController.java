@@ -41,7 +41,7 @@ public class OrdenController {
         }
 
         Orden orden = servicio.crear(
-                token.getClaimAsString("oid"),
+                identificadorDe(token),
                 correoDe(token),
                 peticion.items());
 
@@ -50,7 +50,7 @@ public class OrdenController {
 
     @GetMapping("/mis-ordenes")
     public ResponseEntity<List<Orden>> misOrdenes(@AuthenticationPrincipal Jwt token) {
-        return ResponseEntity.ok(servicio.misOrdenes(token.getClaimAsString("oid")));
+        return ResponseEntity.ok(servicio.misOrdenes(identificadorDe(token)));
     }
 
     /** Ordenes de todos los clientes. Requiere el rol Admin, si no responde 403. */
@@ -58,6 +58,12 @@ public class OrdenController {
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<List<Orden>> todos() {
         return ResponseEntity.ok(servicio.todos());
+    }
+
+    /** El identificador estable es "oid" en Azure y "sub" en Cognito. */
+    private String identificadorDe(Jwt token) {
+        String issuer = token.getIssuer() == null ? "" : token.getIssuer().toString();
+        return issuer.contains("cognito-idp") ? token.getSubject() : token.getClaimAsString("oid");
     }
 
     private String correoDe(Jwt token) {
