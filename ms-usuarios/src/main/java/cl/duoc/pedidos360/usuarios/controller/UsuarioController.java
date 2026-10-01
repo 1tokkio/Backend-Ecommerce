@@ -4,6 +4,7 @@ import cl.duoc.pedidos360.usuarios.model.Usuario;
 import cl.duoc.pedidos360.usuarios.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,16 +33,21 @@ public class UsuarioController {
 
     /** Perfil del usuario del token. Devuelve tambien los claims que usamos para autorizar. */
     @GetMapping("/perfil")
-    public ResponseEntity<Map<String, Object>> perfil(@AuthenticationPrincipal Jwt token) {
-        Usuario usuario = servicio.sincronizar(token);
+    public ResponseEntity<Map<String, Object>> perfil(@AuthenticationPrincipal Jwt token,
+                                                       Authentication authentication) {
+        // El rol ya lo resolvio SecurityConfig (roles de Azure, cognito:groups o el
+        // default-role del proveedor); no se vuelve a leer el claim aca.
+        boolean esAdmin = authentication.getAuthorities().stream()
+                .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_Admin"));
+        Usuario usuario = servicio.sincronizar(token, esAdmin);
 
-        // LinkedHashMap y no Map.of, porque scp y roles pueden llegar nulos
+        // LinkedHashMap y no Map.of, porque los claims pueden llegar nulos
         // y Map.of no acepta valores nulos.
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("iss", token.getIssuer() == null ? null : token.getIssuer().toString());
         claims.put("aud", token.getAudience());
-        claims.put("scp", token.getClaimAsString("scp"));
         claims.put("roles", token.getClaimAsStringList("roles"));
+        claims.put("cognito:groups", token.getClaimAsStringList("cognito:groups"));
         claims.put("exp", token.getExpiresAt());
 
         Map<String, Object> respuesta = new LinkedHashMap<>();

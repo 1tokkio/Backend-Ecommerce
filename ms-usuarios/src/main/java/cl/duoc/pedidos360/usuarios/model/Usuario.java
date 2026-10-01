@@ -17,9 +17,13 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Identificador del usuario dentro del tenant. Viene en el claim "oid" del token. */
+    /** Identificador estable en su proveedor: "oid" en Azure, "sub" en Cognito. */
     @Column(nullable = false, unique = true, length = 64)
-    private String azureOid;
+    private String identificadorExterno;
+
+    /** De donde vino el login: "azure" o "cognito". */
+    @Column(nullable = false, length = 20)
+    private String proveedor;
 
     @Column(nullable = false, length = 150)
     private String correo;
@@ -36,8 +40,9 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(String azureOid, String correo, String nombre, String rol) {
-        this.azureOid = azureOid;
+    public Usuario(String identificadorExterno, String proveedor, String correo, String nombre, String rol) {
+        this.identificadorExterno = identificadorExterno;
+        this.proveedor = proveedor;
         this.correo = correo;
         this.nombre = nombre;
         this.rol = rol;
@@ -48,8 +53,12 @@ public class Usuario {
         return id;
     }
 
-    public String getAzureOid() {
-        return azureOid;
+    public String getIdentificadorExterno() {
+        return identificadorExterno;
+    }
+
+    public String getProveedor() {
+        return proveedor;
     }
 
     public String getCorreo() {
