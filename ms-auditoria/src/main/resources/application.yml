@@ -29,10 +29,24 @@ spring:
       simple:
         default-requeue-rejected: false
 
-azure:
-  issuer-uri: ${AZURE_ISSUER_URI}
-  tenant-id: ${AZURE_TENANT_ID}
-  client-id: ${AZURE_CLIENT_ID}
+app:
+  security:
+    jwt:
+      providers:
+        - name: azure
+          jwk-set-uri: ${AZURE_JWKS_URI}
+          issuers:
+            - ${AZURE_ISSUER_URI}
+          audiences:
+            - ${AZURE_CLIENT_ID}
+            - api://${AZURE_CLIENT_ID}
+        - name: cognito
+          jwk-set-uri: ${COGNITO_JWKS_URI}
+          issuers:
+            - ${COGNITO_ISSUER_URI}
+          audiences:
+            - ${COGNITO_CLIENT_ID}
+          default-role: Cliente
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
