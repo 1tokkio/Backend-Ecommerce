@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: validador
+  main:
+    # La Lambda no es un servidor: no debe intentar arrancar Tomcat ni el ciclo
+    # de vida de una aplicacion web.
+    web-application-type: none
+    banner-mode: "off"
+
+app:
+  security:
+    jwt:
+      providers:
+        # accesos Azure
+        - name: azure
+          jwk-set-uri: https://login.microsoftonline.com/ea17237b-da5d-42e7-b9bc-49e0f9a718ac/discovery/v2.0/keys
+          issuers:
+            - https://login.microsoftonline.com/ea17237b-da5d-42e7-b9bc-49e0f9a718ac/v2.0
+          # Azure usa el Application ID URI como "aud"
+          audiences:
+            - ff0e0143-39df-42bd-aa45-5100c15e68e7
+            - api://ff0e0143-39df-42bd-aa45-5100c15e68e7
+
+        #Acceso AWS Cognito
+        - name: cognito
+          jwk-set-uri: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_10gAv8Uy3/.well-known/jwks.json
+          issuers:
+            - https://cognito-idp.us-east-1.amazonaws.com/us-east-1_10gAv8Uy3
+          # App Client ID del user pool. OJO: en Cognito este valor aparece en el
+          # claim "aud" del ID token, pero en el claim "client_id" del ACCESS token
+          # (por diseno, para que un access token no se pueda usar donde se espera
+          # un ID token). El authorizer acepta cualquiera de los dos.
+          #
+          # No se declara ningun rol por defecto: este authorizer solo comprueba
+          # que el token sea valido. Quien decide sobre roles es el backend.
+          audiences:
+            - 1omt42s0vrmhbi0unpms297hrc
+
+logging:
+  level:
+    # Autorizacion: un nivel bajo es un riesgo, no solo ruido.
+    org.springframework.security: INFO
+    com.lambda.validador: INFO
+    # AWSLambdaUtils registra el evento ENTERO en INFO, y el evento del authorizer
+    # lleva el token en claro dos veces: en "identitySource" y en
+    # "headers.authorization". Con este nivel, cada peticion deja un JWT
+    # reutilizable escrito en CloudWatch Logs.
+    org.springframework.cloud.function: WARN
