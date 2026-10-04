@@ -2,7 +2,15 @@
 
 Los seis microservicios del sistema Pedidos360, construidos con Spring Boot 3.2.5
 sobre Java 17. Cada uno es un Resource Server de OAuth2: recibe el access token que
-el frontend obtuvo desde Microsoft Entra ID y lo valida antes de responder.
+el frontend obtuvo desde Microsoft Entra ID (administradores) o AWS Cognito
+(clientes) y lo valida antes de responder.
+
+En AWS, antes de llegar aqui, el API Gateway ya filtro la peticion con un Lambda
+authorizer (`Backend-Ecommerce/lambda-validador`) que comprueba que el token sea
+valido para alguno de los dos proveedores. Ese filtro no reemplaza la validacion
+de cada microservicio: la Lambda solo decide si la peticion entra a la API, cada
+servicio vuelve a validar el token por su cuenta y decide el rol con
+`@PreAuthorize`. Son dos capas independientes a proposito.
 
 | Servicio           | Puerto | Schema           | Ruta base                 |
 |---------------------|--------|------------------|----------------------------|
@@ -22,10 +30,11 @@ el frontend obtuvo desde Microsoft Entra ID y lo valida antes de responder.
 3. **Audiencia** - el claim `aud` tiene que apuntar a esta API.
 4. **Vigencia** - el token no puede estar expirado ni ser todavia futuro.
 
-Ademas, los app roles que vienen en el claim `roles` se traducen a autoridades de
-Spring con el prefijo `ROLE_`, lo que permite proteger endpoints con
-`@PreAuthorize("hasRole('Admin')")`. Un token valido pero sin ese rol recibe **403**,
-mientras que una peticion sin token recibe **401**.
+Ademas, los roles se traducen a autoridades de Spring con el prefijo `ROLE_`, lo que
+permite proteger endpoints con `@PreAuthorize("hasRole('Admin')")`: el claim `roles`
+en Azure, `cognito:groups` en Cognito, y si el token no trae ninguno de los dos se
+aplica el `default-role` del proveedor. Un token valido pero sin ese rol recibe
+**403**, mientras que una peticion sin token recibe **401**.
 
 ## Mensajeria
 
@@ -45,7 +54,7 @@ cada `RabbitConfig`.
 ### ms-productos
 - `GET /api/v1/productos/estado` - abierto, sin token.
 - `GET /api/v1/productos` - catalogo con stock.
-- `GET /api/v1/productos/{id}` - detalle de un producto.
+- `GET /api/v1/productos?id=1` - detalle de un producto (id por query string, no por path).
 - `POST /api/v1/productos` - cuerpo `{ "nombre": "...", "descripcion": "...", "precio": 1000, "categoria": "...", "stock": 10 }`, **solo rol Admin**.
 - Consume `pedido.creado` y descuenta el stock de cada item.
 
@@ -53,7 +62,7 @@ cada `RabbitConfig`.
 - `GET /api/v1/carrito/estado` - abierto, sin token.
 - `GET /api/v1/carrito` - carrito del usuario del token, con total calculado.
 - `POST /api/v1/carrito/items` - cuerpo `{ "productoId": 1, "nombreProducto": "...", "precioUnitario": 1000, "cantidad": 2 }`.
-- `DELETE /api/v1/carrito/items/{id}` - quita un item propio.
+- `DELETE /api/v1/carrito/items?id=1` - quita un item propio (id por query string, no por path).
 - `DELETE /api/v1/carrito` - vacia el carrito.
 
 ### ms-ordenes
