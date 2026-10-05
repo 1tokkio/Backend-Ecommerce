@@ -35,14 +35,12 @@ public class UsuarioController {
     @GetMapping("/perfil")
     public ResponseEntity<Map<String, Object>> perfil(@AuthenticationPrincipal Jwt token,
                                                        Authentication authentication) {
-        // El rol ya lo resolvio SecurityConfig (roles de Azure, cognito:groups o el
-        // default-role del proveedor); no se vuelve a leer el claim aca.
+        // El rol ya lo resolvio SecurityConfig, no se vuelve a leer el claim aca.
         boolean esAdmin = authentication.getAuthorities().stream()
                 .anyMatch(autoridad -> autoridad.getAuthority().equals("ROLE_Admin"));
         Usuario usuario = servicio.sincronizar(token, esAdmin);
 
-        // LinkedHashMap y no Map.of, porque los claims pueden llegar nulos
-        // y Map.of no acepta valores nulos.
+        // LinkedHashMap y no Map.of: los claims pueden llegar nulos.
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("iss", token.getIssuer() == null ? null : token.getIssuer().toString());
         claims.put("aud", token.getAudience());

@@ -21,11 +21,7 @@ public class CarritoService {
         return items.findByUsuarioOid(usuarioOid);
     }
 
-    /**
-     * El servicio no conoce el catalogo: los datos del producto vienen en la peticion,
-     * porque un microservicio no consulta a otro. Si el producto ya estaba en el carrito
-     * sumamos cantidades en vez de duplicar la linea.
-     */
+    // Los datos del producto vienen en la peticion: un microservicio no consulta a otro.
     public ItemCarrito agregar(String usuarioOid, Long productoId, String nombreProducto,
                                Integer precioUnitario, int cantidad) {
         return items.findByUsuarioOidAndProductoId(usuarioOid, productoId)

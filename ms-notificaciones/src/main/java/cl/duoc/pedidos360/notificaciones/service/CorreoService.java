@@ -34,17 +34,8 @@ public class CorreoService {
                 : "Pedidos360 - Confirmacion de tu orden #" + ordenId;
     }
 
-    /**
-     * Un correo que falla no puede tumbar el consumo del mensaje: la orden ya existe
-     * y el stock ya se descuenta por su cuenta. Si el envio falla, se avisa con el
-     * valor de retorno para que quede registrado, pero no se relanza la excepcion.
-     *
-     * ordenId nulo es el caso del envio de prueba desde Postman, que no viene de una
-     * orden real; ahi el correo sale mas generico y sin detalle de items.
-     *
-     * Sin SMTP_USER configurado (desarrollo local sin credenciales), no se intenta
-     * conectar: se deja el correo completo en el log y se marca como enviado.
-     */
+    // Un fallo de envio no relanza excepcion: la orden ya existe, no hay nada que
+    // reintentar. Sin SMTP_USER configurado, el correo queda en el log en vez de enviarse.
     public boolean enviarConfirmacion(String destinatario, Long ordenId, Integer total, List<String> detalleItems) {
         String asunto = asuntoPara(ordenId);
         String cuerpo = cuerpoHtml(ordenId, total, detalleItems);

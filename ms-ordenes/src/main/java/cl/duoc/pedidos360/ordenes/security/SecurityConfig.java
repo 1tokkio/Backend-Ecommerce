@@ -32,12 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-/**
- * El microservicio actua como Resource Server de dos proveedores OIDC a la vez:
- * Microsoft Entra ID para administradores y AWS Cognito para clientes.
- * MultiIssuerJwtDecoder elige el decoder segun el "iss" del token; cada decoder
- * delegado valida firma, audiencia y fechas por su cuenta.
- */
+// Resource Server de dos proveedores OIDC: Azure para administradores, Cognito para clientes.
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -79,11 +74,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Un decoder por proveedor, envuelto en MultiIssuerJwtDecoder para que el
-     * resource server acepte tokens de Azure y de Cognito sin que uno pueda
-     * validar tokens del otro.
-     */
+    // Un decoder por proveedor; MultiIssuerJwtDecoder enruta por "iss".
     @Bean
     public JwtDecoder jwtDecoder() {
         Map<String, JwtDecoder> decodersPorEmisor = new LinkedHashMap<>();
@@ -108,13 +99,8 @@ public class SecurityConfig {
         return new MultiIssuerJwtDecoder(decodersPorEmisor);
     }
 
-    /**
-     * Un token solo sirve para este backend si identifica a este backend como su
-     * destinatario. El claim no siempre se llama igual: Azure y el ID token de
-     * Cognito lo ponen en "aud", pero el ACCESS token de Cognito lo pone en
-     * "client_id" (por diseno, para que un access token no se use donde se
-     * espera un ID token). Por eso se aceptan los dos.
-     */
+    // Azure y el ID token de Cognito usan "aud"; el ACCESS token de Cognito usa
+    // "client_id" en su lugar (asi no sirve donde se espera un ID token).
     private OAuth2TokenValidator<Jwt> audienceValidator(List<String> audiences) {
         return token -> {
             List<String> aud = token.getClaimAsStringList("aud");
@@ -141,14 +127,9 @@ public class SecurityConfig {
         return converter;
     }
 
-    /**
-     * Azure trae los roles en el claim "roles". Cognito no usa "roles": sus
-     * permisos son los grupos de "cognito:groups", y ese claim solo existe en el
-     * ID token, no en el access token que llega al resource server. Por eso un
-     * access token de Cognito llega sin ningun rol, y ahi se aplica el
-     * default-role del proveedor (solo como respaldo: si el usuario pertenece a
-     * un grupo, el grupo manda). Prefijo ROLE_ para poder usar hasRole(...).
-     */
+    // Azure usa "roles"; Cognito usa "cognito:groups", pero solo en el ID token,
+    // no en el access token. Por eso el access token de Cognito llega sin rol y
+    // se aplica el default-role como respaldo.
     private Collection<GrantedAuthority> autoridades(Jwt jwt) {
         Collection<GrantedAuthority> authorities = new LinkedHashSet<>();
 

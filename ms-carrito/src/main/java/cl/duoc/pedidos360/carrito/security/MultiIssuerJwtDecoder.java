@@ -11,16 +11,9 @@ import org.springframework.security.oauth2.jwt.JwtException;
 
 import com.nimbusds.jwt.SignedJWT;
 
-/**
- * JwtDecoder que acepta tokens de varios proveedores de identidad a la vez
- * (Azure Entra ID y AWS Cognito).
- *
- * Spring Security solo valida un "issuer-uri" por instancia, asi que aqui se
- * inspecciona el claim "iss" del token (SIN verificar la firma) unicamente para
- * elegir a que decoder se delega. Cada decoder delegado si valida firma, audiencia,
- * fechas y su propio "iss", de modo que elegir el decoder por el "iss" no abre la
- * puerta a tokens de otro tenant: si el "iss" no esta en la lista, se rechaza.
- */
+// Decoder que acepta Azure y Cognito a la vez: elige por "iss" sin verificar la
+// firma, solo para delegar. El decoder delegado si valida firma y audiencia, asi
+// que un emisor no registrado se rechaza igual.
 public class MultiIssuerJwtDecoder implements JwtDecoder {
 
     private final Map<String, JwtDecoder> decodersPorEmisor;
@@ -43,8 +36,7 @@ public class MultiIssuerJwtDecoder implements JwtDecoder {
 
     private String leerEmisor(String token) {
         try {
-            // Se lee el claim crudo porque segun la version de Nimbus "iss" se
-            // expone como String o como lista de String.
+            // "iss" puede llegar como String o como lista, segun la version de Nimbus.
             Object iss = SignedJWT.parse(token).getJWTClaimsSet().getClaim("iss");
 
             if (iss instanceof String emisor) {

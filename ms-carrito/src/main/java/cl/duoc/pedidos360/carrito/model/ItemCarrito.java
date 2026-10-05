@@ -15,7 +15,7 @@ public class ItemCarrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Dueño del item. Sale del claim "oid" del token, nunca del cuerpo de la peticion. */
+    /** Dueño del item: "oid" (Azure) o "sub" (Cognito), nunca del cuerpo de la peticion. */
     @Column(nullable = false, length = 64)
     private String usuarioOid;
 

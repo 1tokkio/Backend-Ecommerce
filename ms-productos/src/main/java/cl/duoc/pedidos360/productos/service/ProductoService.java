@@ -33,10 +33,7 @@ public class ProductoService {
         return repositorio.save(producto);
     }
 
-    /**
-     * Se ejecuta cuando ms-ordenes publica un pedido. Un producto que ya no existe
-     * se ignora: la orden ya esta creada y no hay nada que descontar.
-     */
+    // Un producto que ya no existe se ignora: la orden ya esta creada.
     @Transactional
     public void descontarStock(PedidoCreado pedido) {
         for (PedidoCreado.Item item : pedido.items()) {

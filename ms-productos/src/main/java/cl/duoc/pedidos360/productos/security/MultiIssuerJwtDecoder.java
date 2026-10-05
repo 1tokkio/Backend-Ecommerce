@@ -33,8 +33,7 @@ public class MultiIssuerJwtDecoder implements JwtDecoder {
 
     private String leerEmisor(String token) {
         try {
-            // Se lee el claim crudo porque segun la version de Nimbus "iss" se
-            // expone como String o como lista de String.
+            // "iss" puede llegar como String o como lista, segun la version de Nimbus.
             Object iss = SignedJWT.parse(token).getJWTClaimsSet().getClaim("iss");
 
             if (iss instanceof String emisor) {

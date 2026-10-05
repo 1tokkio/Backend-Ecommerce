@@ -5,13 +5,7 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Lista de proveedores de identidad (OpenID Connect) que el backend acepta como
- * emisores de tokens. Cada proveedor tiene su propio conjunto de llaves publicas
- * (JWK Set) y sus valores de "iss" y "aud" admitidos.
- *
- * Se configura en application.yml bajo app.security.jwt.providers.
- */
+// Proveedores OIDC aceptados (Azure, Cognito), definidos en app.security.jwt.providers.
 @ConfigurationProperties(prefix = "app.security.jwt")
 public class JwtProviderProperties {
 

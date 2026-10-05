@@ -17,10 +17,7 @@ public class ConsumidorEventos {
         this.servicio = servicio;
     }
 
-    /**
-     * Se recibe el mensaje crudo, no un tipo especifico: auditoria no conoce la forma
-     * de cada evento, solo la registra tal cual llego, con la routing key que la identifica.
-     */
+    // Mensaje crudo, no un tipo especifico: auditoria registra cualquier evento tal cual llega.
     @RabbitListener(queues = RabbitConfig.COLA)
     public void alLlegarUnEvento(Message mensaje) {
         String routingKey = mensaje.getMessageProperties().getReceivedRoutingKey();

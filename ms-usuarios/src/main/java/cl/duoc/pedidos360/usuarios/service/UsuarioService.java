@@ -16,16 +16,8 @@ public class UsuarioService {
         this.repositorio = repositorio;
     }
 
-    /**
-     * El registro no lo hace un formulario: el usuario ya existe en su proveedor
-     * de identidad. La primera vez que entra con su token lo guardamos en nuestra
-     * base a partir de los claims, y en las siguientes visitas solo actualizamos
-     * nombre, correo y rol.
-     *
-     * esAdmin viene ya resuelto por SecurityConfig (via el rol de la autenticacion),
-     * no se vuelve a leer el claim "roles" aca: asi el default-role de Cognito
-     * tambien queda reflejado sin duplicar esa logica.
-     */
+    // Registra o actualiza al usuario a partir de los claims del token; esAdmin
+    // ya viene resuelto por SecurityConfig, no se relee el rol aca.
     public Usuario sincronizar(Jwt token, boolean esAdmin) {
         String proveedor = proveedorDe(token);
         String identificador = identificadorDe(token, proveedor);
