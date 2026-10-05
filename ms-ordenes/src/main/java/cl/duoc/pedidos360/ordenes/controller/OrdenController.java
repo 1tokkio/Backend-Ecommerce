@@ -42,7 +42,7 @@ public class OrdenController {
 
         Orden orden = servicio.crear(
                 identificadorDe(token),
-                correoDe(token),
+                correoDe(token, peticion.correo()),
                 peticion.items());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(orden);
@@ -66,10 +66,15 @@ public class OrdenController {
         return issuer.contains("cognito-idp") ? token.getSubject() : token.getClaimAsString("oid");
     }
 
-    private String correoDe(Jwt token) {
+    // El access token de Cognito no trae claims de perfil; ahi se usa el correo
+    // que mando el frontend en el cuerpo (lo saca del id_token, no del token de la API).
+    private String correoDe(Jwt token, String correoRespaldo) {
         String correo = token.getClaimAsString("preferred_username");
         if (correo == null) {
             correo = token.getClaimAsString("email");
+        }
+        if (correo == null && correoRespaldo != null && !correoRespaldo.isBlank()) {
+            correo = correoRespaldo;
         }
         return correo == null ? "sin-correo" : correo;
     }
