@@ -20,6 +20,9 @@ public class NotificacionEnviada {
     @Column(nullable = false, length = 150)
     private String destinatario;
 
+    @Column(nullable = false, length = 150)
+    private String asunto;
+
     private Long ordenId;
 
     private Integer total;
@@ -33,8 +36,9 @@ public class NotificacionEnviada {
     public NotificacionEnviada() {
     }
 
-    public NotificacionEnviada(String destinatario, Long ordenId, Integer total, boolean enviada) {
+    public NotificacionEnviada(String destinatario, String asunto, Long ordenId, Integer total, boolean enviada) {
         this.destinatario = destinatario;
+        this.asunto = asunto;
         this.ordenId = ordenId;
         this.total = total;
         this.estado = enviada ? "ENVIADO" : "FALLIDO";
@@ -47,6 +51,10 @@ public class NotificacionEnviada {
 
     public String getDestinatario() {
         return destinatario;
+    }
+
+    public String getAsunto() {
+        return asunto;
     }
 
     public Long getOrdenId() {

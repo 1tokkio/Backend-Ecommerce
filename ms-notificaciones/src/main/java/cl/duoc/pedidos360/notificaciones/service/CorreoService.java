@@ -17,10 +17,21 @@ public class CorreoService {
 
     private final JavaMailSender mailSender;
     private final String remitente;
+    private final boolean configurado;
 
-    public CorreoService(JavaMailSender mailSender, @Value("${correo.remitente}") String remitente) {
+    public CorreoService(JavaMailSender mailSender,
+                          @Value("${correo.remitente}") String remitente,
+                          @Value("${spring.mail.username:}") String usuarioSmtp) {
         this.mailSender = mailSender;
         this.remitente = remitente;
+        this.configurado = usuarioSmtp != null && !usuarioSmtp.isBlank();
+    }
+
+    /** Mismo asunto que arma el correo, expuesto para que quede registrado en la tabla. */
+    public String asuntoPara(Long ordenId) {
+        return ordenId == null
+                ? "Pedidos360 - Correo de prueba"
+                : "Pedidos360 - Confirmacion de tu orden #" + ordenId;
     }
 
     /**
@@ -30,17 +41,27 @@ public class CorreoService {
      *
      * ordenId nulo es el caso del envio de prueba desde Postman, que no viene de una
      * orden real; ahi el correo sale mas generico y sin detalle de items.
+     *
+     * Sin SMTP_USER configurado (desarrollo local sin credenciales), no se intenta
+     * conectar: se deja el correo completo en el log y se marca como enviado.
      */
     public boolean enviarConfirmacion(String destinatario, Long ordenId, Integer total, List<String> detalleItems) {
+        String asunto = asuntoPara(ordenId);
+        String cuerpo = cuerpoHtml(ordenId, total, detalleItems);
+
+        if (!configurado) {
+            log.info("SMTP no configurado, correo no enviado de verdad. Para: {} | Asunto: {} | Cuerpo: {}",
+                    destinatario, asunto, cuerpo);
+            return true;
+        }
+
         try {
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, false, "UTF-8");
             helper.setFrom(remitente);
             helper.setTo(destinatario);
-            helper.setSubject(ordenId == null
-                    ? "Pedidos360 - Correo de prueba"
-                    : "Pedidos360 - Confirmacion de tu orden #" + ordenId);
-            helper.setText(cuerpoHtml(ordenId, total, detalleItems), true);
+            helper.setSubject(asunto);
+            helper.setText(cuerpo, true);
 
             mailSender.send(mensaje);
             log.info("Correo enviado a {} por la orden {}", destinatario, ordenId);

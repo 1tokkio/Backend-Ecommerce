@@ -25,7 +25,8 @@ public class NotificacionService {
     /** Envia el correo y deja registrado el intento, haya salido o no. */
     public NotificacionEnviada enviar(String destinatario, Long ordenId, Integer total, List<String> detalleItems) {
         boolean enviada = correo.enviarConfirmacion(destinatario, ordenId, total, detalleItems);
-        return repositorio.save(new NotificacionEnviada(destinatario, ordenId, total, enviada));
+        String asunto = correo.asuntoPara(ordenId);
+        return repositorio.save(new NotificacionEnviada(destinatario, asunto, ordenId, total, enviada));
     }
 
     public List<NotificacionEnviada> listar() {

@@ -30,10 +30,13 @@ spring:
         default-requeue-rejected: false
 
   mail:
-    host: ${SMTP_HOST}
+    # Sin valor por defecto, el servicio no arranca cuando faltan estas variables
+    # en local. Con default vacio arranca igual; CorreoService detecta que no hay
+    # usuario configurado y deja el correo en el log en vez de enviarlo.
+    host: ${SMTP_HOST:}
     port: ${SMTP_PORT:587}
-    username: ${SMTP_USER}
-    password: ${SMTP_PASSWORD}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -42,7 +45,7 @@ spring:
             enable: true
 
 correo:
-  remitente: ${SMTP_USER}
+  remitente: ${SMTP_USER:}
 
 app:
   security:
